@@ -716,6 +716,10 @@ def health_check():
 def health_check_simple():
     return jsonify({'status': 'ok'}), 200
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({'message': 'Business Proposal Generator API is running', 'status': 'healthy'}), 200
+
 def seed_funding_sources():
     """Seed initial funding sources"""
     funding_sources = [
