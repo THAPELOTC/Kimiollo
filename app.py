@@ -12,26 +12,43 @@ import re
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Production environment configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///business_proposal.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'business-proposal-generator-jwt-secret-key-2025')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
+# Production settings
+if os.environ.get('FLASK_ENV') == 'production':
+    app.config['DEBUG'] = False
+else:
+    app.config['DEBUG'] = True
+
 # Import SQLAlchemy and create db instance
 from models import db
 
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-# Allow access from localhost, local network devices, and ngrok domains
-import re
+
+# CORS configuration for production
 def is_allowed_origin(origin):
     if not origin:
         return False
     
+    allowed_origins = [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://thapelotc.github.io'
+    ]
+    
+    # Check exact matches first
+    if origin in allowed_origins:
+        return True
+    
+    # Patterns for local development and tunneling
     allowed_patterns = [
-        r'^http://localhost:3000$',
-        r'^http://127\.0\.0\.1:3000$',
         r'^http://192\.168\.\d+\.\d+:3000$',
         r'^https://[a-zA-Z0-9-]+\.ngrok\.io$',
         r'^https://[a-zA-Z0-9-]+\.ngrok-free\.app$',
@@ -41,8 +58,11 @@ def is_allowed_origin(origin):
     
     return any(re.match(pattern, origin) for pattern in allowed_patterns)
 
-# Temporarily allow all origins for troubleshooting - you can restrict this later
-CORS(app, origins="*", supports_credentials=True)
+# Use dynamic CORS for production, allow all for development
+if os.environ.get('FLASK_ENV') == 'production':
+    CORS(app, origins=is_allowed_origin, supports_credentials=True)
+else:
+    CORS(app, origins="*", supports_credentials=True)
 
 # JWT error handlers
 @jwt.expired_token_loader
@@ -755,5 +775,9 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Database initialization error: {e}")
     
-    print("Starting Flask server on http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Production-ready server configuration
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    
+    print(f"Starting Flask server on port {port}")
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
