@@ -767,7 +767,13 @@ def seed_funding_sources():
     
     db.session.commit()
 
+# Initialize database when app starts (for production)
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    return False
+
 if __name__ == '__main__':
+    # Initialize database and run development server
     with app.app_context():
         try:
             db.create_all()
@@ -786,9 +792,30 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Database initialization error: {e}")
     
-    # Production-ready server configuration
-    port = int(os.environ.get('PORT', 5000))
-    debug_mode = os.environ.get('FLASK_ENV') != 'production'
-    
-    print(f"Starting Flask server on port {port}")
-    app.run(debug=debug_mode, host='0.0.0.0', port=port)
+    # Only run Flask dev server in development
+    if os.environ.get('FLASK_ENV') != 'production':
+        port = int(os.environ.get('PORT', 5000))
+        debug_mode = os.environ.get('FLASK_ENV') != 'production'
+        print(f"Starting Flask development server on port {port}")
+        app.run(debug=debug_mode, host='0.0.0.0', port=port)
+
+
+# Initialize database tables when app context is available
+def initialize_database():
+    try:
+        with app.app_context():
+            db.create_all()
+            print("Database tables initialized successfully")
+            
+            # Seed funding sources if needed
+            if not FundingSource.query.first():
+                seed_funding_sources()
+                print("Funding sources seeded successfully")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+# Try to initialize database (will work when gunicorn loads the app)
+try:
+    initialize_database()
+except:
+    print("Database initialization will happen on first request")
