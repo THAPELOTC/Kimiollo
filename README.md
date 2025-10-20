@@ -147,6 +147,42 @@ kimiollo/
 
 This project was developed as part of ISJ107V - Assignment 1, 2025 by Hlakola K.
 
+## Deployment
+
+### GitHub Pages (Frontend Only)
+This repository is configured for automatic deployment to GitHub Pages.
+
+1. **Set up GitHub repository:**
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/kimiollo.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+2. **Enable GitHub Pages:**
+   - Go to repository Settings → Pages
+   - Source: "GitHub Actions"
+   - Your site will be available at: `https://YOUR_USERNAME.github.io/kimiollo`
+
+3. **Configure API URL:**
+   - Go to repository Settings → Secrets → Actions
+   - Add secret named "API_URL" with your backend API URL
+
+### Full Stack Deployment
+For complete functionality, deploy both frontend and backend:
+
+**Backend Options:**
+- Heroku (free tier available)
+- Railway
+- Render
+- Python Anywhere
+
+**Frontend:** GitHub Pages (this repository)
+
+## Live Demo
+- Frontend: https://thapelo01.github.io/kimiollo
+- Backend: (Deploy separately using options above)
+
 ## License
 
 This project is for educational purposes as part of the university assignment.
