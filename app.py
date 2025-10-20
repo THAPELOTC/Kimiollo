@@ -705,20 +705,26 @@ def get_proposal_content(proposal_id):
         print(f"Get proposal content error: {e}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    try:
-        return jsonify({'status': 'healthy', 'message': 'Flask backend is running'}), 200
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
 @app.route('/health', methods=['GET'])
 def health_check_simple():
     return jsonify({'status': 'ok'}), 200
 
 @app.route('/', methods=['GET'])
 def root():
-    return jsonify({'message': 'Business Proposal Generator API is running', 'status': 'healthy'}), 200
+    try:
+        # Initialize database tables if they don't exist (lazy initialization)
+        db.create_all()
+        return jsonify({
+            'message': 'Business Proposal Generator API is running', 
+            'status': 'healthy',
+            'database': 'initialized'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'message': 'Business Proposal Generator API is running',
+            'status': 'healthy', 
+            'database': f'init error: {str(e)}'
+        }), 200
 
 def seed_funding_sources():
     """Seed initial funding sources"""
@@ -800,22 +806,4 @@ if __name__ == '__main__':
         app.run(debug=debug_mode, host='0.0.0.0', port=port)
 
 
-# Initialize database tables when app context is available
-def initialize_database():
-    try:
-        with app.app_context():
-            db.create_all()
-            print("Database tables initialized successfully")
-            
-            # Seed funding sources if needed
-            if not FundingSource.query.first():
-                seed_funding_sources()
-                print("Funding sources seeded successfully")
-    except Exception as e:
-        print(f"Database initialization error: {e}")
-
-# Try to initialize database (will work when gunicorn loads the app)
-try:
-    initialize_database()
-except:
-    print("Database initialization will happen on first request")
+# App will start with routes already defined above
