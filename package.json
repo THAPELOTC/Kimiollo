@@ -2,7 +2,7 @@
   "name": "business-proposal-generator-frontend",
   "version": "1.0.0",
   "description": "Frontend for AI-Powered Business Proposal Generator & Funding Finder",
-  "homepage": "https://thapelo01.github.io/kimiollo",
+  "homepage": "https://thapelotc.github.io/Kimiollo",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
