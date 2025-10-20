@@ -707,7 +707,14 @@ def get_proposal_content(proposal_id):
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()}), 200
+    try:
+        return jsonify({'status': 'healthy', 'message': 'Flask backend is running'}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check_simple():
+    return jsonify({'status': 'ok'}), 200
 
 def seed_funding_sources():
     """Seed initial funding sources"""
